@@ -1,0 +1,23 @@
+<body class="ant-row-center">
+  <form nz-form [nzAutoTips]="autoTips" [formGroup]="loginForm" class="login-form" (ngSubmit)="login()">
+    <h2>请登录</h2>
+    <nz-form-item>
+      <nz-form-control nzValidatingTip="Validating...">
+        <nz-input-group nzPrefixIcon="user">
+          <input nz-input formControlName="username" placeholder="Username" />
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-control nzDisableAutoTips nzErrorTip="Please input your password!">
+        <nz-input-group nzPrefixIcon="lock">
+          <input nz-input type="password" formControlName="password" placeholder="password"/>
+        </nz-input-group>
+      </nz-form-control>
+    </nz-form-item>
+    <button nz-button class="login-form-button login-form-margin" [nzType]="'primary'">Log in</button>
+    Or
+    <a routerLink="/register">register now!</a>
+  </form>
+</body>
+

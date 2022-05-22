@@ -1,20 +1,39 @@
-import {Injectable} from '@angular/core';
+import {Injectable, Injector} from '@angular/core';
 import {
   HttpErrorResponse,
   HttpEvent,
-  HttpHandler,
+  HttpHandler, HttpHeaders,
   HttpInterceptor,
   HttpRequest,
-  HttpResponse
+  HttpResponseBase
 } from '@angular/common/http';
 
-import {Observable, of, tap} from 'rxjs';
-import {Router} from "@angular/router";
+import {catchError, mergeMap, Observable, of, tap, throwError} from 'rxjs';
 import {environment} from "../environments/environment";
+import {Router} from "@angular/router";
+import {NzMessageService} from "ng-zorro-antd/message";
+
+const CODEMESSAGE: { [key: number]: string } = {
+  200: '服务器成功返回请求的数据。',
+  201: '新建或修改数据成功。',
+  202: '一个请求已经进入后台排队（异步任务）。',
+  204: '删除数据成功。',
+  400: '发出的请求有错误，服务器没有进行新建或修改数据的操作。',
+  401: '用户没有权限（令牌、用户名、密码错误）。',
+  403: '用户得到授权，但是访问是被禁止的。',
+  404: '发出的请求针对的是不存在的记录，服务器没有进行操作。',
+  406: '请求的格式不可得。',
+  410: '请求的资源被永久删除，且不会再得到的。',
+  422: '当创建一个对象时，发生一个验证错误。',
+  500: '服务器发生错误，请检查服务器。',
+  502: '网关错误。',
+  503: '服务不可用，服务器暂时过载或维护。',
+  504: '网关超时。'
+};
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
-  constructor(public router: Router) {}
+  constructor(private injector: Injector, public message: NzMessageService) {}
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>>   {
     // 统一加上服务端前缀
     let url = req.url;
@@ -23,43 +42,59 @@ export class TokenInterceptor implements HttpInterceptor {
       url = baseUrl + (baseUrl.endsWith('/') && url.startsWith('/') ? url.substring(1) : url);
     }
 
-    // 设置Authorization的请求头
-    const authToken = sessionStorage.getItem("token")
-    if (authToken) {
-      // 服务请求时所有的请求加入token
-      const authReq = req.clone({
-        headers: req.headers.set('Authorization', 'bearer' + authToken),
-        url: req.url
-      });
-      // 服务器响应结果
-      return next.handle(authReq).pipe(tap(event => {
-        if (event instanceof HttpResponse) {
-          this.handleData(event);
+    const newReq = req.clone({ url, setHeaders: TokenInterceptor.getAdditionalHeaders(req.headers) });
+    return next.handle(newReq).pipe(
+      mergeMap(ev => {
+        // 允许统一对请求错误处理
+        if (ev instanceof HttpResponseBase) {
+          return this.handleData(ev, newReq, next);
         }
-      }));
-    }
-    // 若token不存在，则不对请求进行处理
-    return next.handle(req).pipe(tap(event => {
-      if (event instanceof HttpResponse) {
-        this.handleData(event);
-      }
-    }));
+        // 若一切都正常，则后续操作
+        return of(ev);
+      }),
+      catchError((err: HttpErrorResponse) => this.handleData(err, newReq, next))
+    );
   }
-  handleData(event: HttpResponse<any> | HttpErrorResponse): Observable<any> {
-    switch (event.status) {
-      case 200:
-        return of(event);
-      case 401:
-        this.router.navigate(['/login']).then(ignore => {});
-        return of(event);
-      case 404:
-        this.router.navigate(['/404']).then(ignore => {});
-        return of(event);
-      case 500:
-        return of(event);
-      default:
-        return of(event);
+
+  private static getAdditionalHeaders(headers?: HttpHeaders): { [name: string]: string } {
+    const res: { [name: string]: string } = {};
+    const authToken = sessionStorage.getItem("token");
+    if (!headers?.has('Authorization') && authToken) {
+      res['Authorization'] = 'Bearer ' + authToken;
     }
+    return res;
+  }
+
+  private handleData(ev: HttpResponseBase, req: HttpRequest<any>, next: HttpHandler): Observable<any> {
+    this.checkStatus(ev);
+    switch (ev.status) {
+      case 200:
+        break;
+      case 401:
+        setTimeout(() => this.injector.get(Router).navigateByUrl("/login"));
+        break;
+      case 403:
+      case 404:
+        setTimeout(() => this.injector.get(Router).navigateByUrl("/404"));
+        break;
+      case 500:
+        break;
+      default:
+        break;
+    }
+    if (ev instanceof HttpErrorResponse) {
+      return throwError(() => ev);
+    } else {
+      return of(ev);
+    }
+  }
+
+  private checkStatus(ev: HttpResponseBase): void {
+    if ((ev.status >= 200 && ev.status < 300) || ev.status === 401) {
+      return;
+    }
+    const errorText = CODEMESSAGE[ev.status] || ev.statusText;
+    this.message.error(`请求错误 ${ev.status}: ${errorText}`);
   }
 }
 

@@ -1,0 +1,35 @@
+<div>
+  <nz-table
+    nzShowSizeChanger
+    [nzData]="listOfNumber"
+    [nzFrontPagination]="false"
+    [nzLoading]="loading"
+    [nzTotal]="total"
+    [nzShowPagination]=true
+    [nzPageSize]="pageSize"
+    [nzPageIndex]="pageIndex"
+    (nzQueryParams)="onQueryParamsChange($event)"
+  >
+    <thead>
+    <tr>
+      <th nzColumnKey="virtualNumber">虚拟号</th>
+      <th nzColumnKey="areaCode">区号</th>
+      <th nzColumnKey="serialNumber">所在号码池</th>
+      <th nzColumnKey="enable">是否可用</th>
+      <th nzColumnKey="operation">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let data of listOfNumber">
+      <td>{{ data.virtualNumber }}</td>
+      <td>{{ data.areaCode }}</td>
+      <td>{{ data.serialNumber }}</td>
+      <td>{{ data.enable?'是':'否' }}</td>
+      <td>
+        <a nz-popconfirm nzPopconfirmTitle="确定{{ data.enable?'禁用':'启用' }}?"
+           (nzOnConfirm)="enableOrDisableNumber(data.virtualNumber!, !data.enable)">{{ data.enable?'禁用号码':'启用号码' }}</a>
+      </td>
+    </tr>
+    </tbody>
+  </nz-table>
+</div>

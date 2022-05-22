@@ -1,0 +1,66 @@
+<div>
+  <button nz-button nzType="primary" (click)="showModal()">新增</button>
+  <nz-modal
+    [(nzVisible)]="isVisible"
+    nzTitle="添加号码池"
+    nzOkText="确定"
+    nzCancelText="取消"
+    (nzOnOk)="handleOk()"
+    (nzOnCancel)="handleCancel()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form  [formGroup]="addPoolForm" class="add-pool-form" (ngSubmit)="handleOk()">
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="serialNumber">号码池编号</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="serialNumber" placeholder="号码池编号" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="enable">是否启用</nz-form-label>
+          <nz-radio-group formControlName="enable">
+            <label nz-radio nzValue="true">启用</label>
+            <label nz-radio nzValue="false">禁用</label>
+          </nz-radio-group>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="description">备注</nz-form-label>
+          <nz-form-control nzDisableAutoTips>
+            <textarea formControlName="description" nz-input rows="2" placeholder="备注"></textarea>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>
+
+<nz-table
+  nzShowSizeChanger
+  [nzData]="listOfPool"
+  [nzFrontPagination]="false"
+  [nzLoading]="loading"
+  [nzTotal]="total"
+  [nzShowPagination]=true
+  [nzPageSize]="pageSize"
+  [nzPageIndex]="pageIndex"
+  (nzQueryParams)="onQueryParamsChange($event)"
+>
+  <thead>
+  <tr>
+    <th nzColumnKey="serialNumber">号码池编号</th>
+    <th nzColumnKey="description">说明</th>
+    <th nzColumnKey="enable">是否可用</th>
+    <th nzColumnKey="operation">操作</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let data of listOfPool">
+    <td>{{ data.serialNumber }}</td>
+    <td>{{ data.description }}</td>
+    <td>{{ data.enable?'是':'否' }}</td>
+    <td>
+      <a [routerLink]="['../../pool/number/', data.serialNumber]">号码管理</a>
+    </td>
+  </tr>
+  </tbody>
+</nz-table>

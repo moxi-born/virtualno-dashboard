@@ -1,8 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {AbstractControl, FormBuilder, FormControl, FormGroup, ValidatorFn, Validators} from "@angular/forms";
+import {AbstractControl, FormBuilder, FormGroup, ValidatorFn, Validators} from "@angular/forms";
 import {Router} from "@angular/router";
 import {HttpErrorResponse} from "@angular/common/http";
-import {Observable, Observer} from "rxjs";
 import {NzSafeAny} from "ng-zorro-antd/core/types";
 import {AuthService} from "../../auth.service";
 import {NzMessageService} from "ng-zorro-antd/message";
@@ -23,24 +22,10 @@ export class LoginComponent implements OnInit {
     }
   };
 
-  userNameAsyncValidator = (control: FormControl) =>
-    new Observable((observer: Observer<MyValidationErrors | null>) => {
-      setTimeout(() => {
-        if (control.value === 'Admin') {
-          observer.next({
-            duplicated: { 'zh-cn': `用户名已存在`, en: `The username is redundant!` }
-          });
-        } else {
-          observer.next(null);
-        }
-        observer.complete();
-      }, 1000);
-    });
-
   constructor(private fb: FormBuilder, public router: Router, public authService: AuthService, public message: NzMessageService) {
     const { required, maxLength, minLength} = MyValidators;
     this.loginForm = this.fb.group({
-      username: ['', [required, maxLength(12), minLength(5)], [this.userNameAsyncValidator]],
+      username: ['', [required, maxLength(12), minLength(5)]],
       password: ['', [required, minLength(6)]]
     });
   }
@@ -58,8 +43,10 @@ export class LoginComponent implements OnInit {
       this.authService.login(user).subscribe({
         next: (res: string) => {
           sessionStorage.setItem("token", res);
+          user.password="";
+          sessionStorage.setItem("user", JSON.stringify(user))
           this.message.success("authentication success");
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/dashboard']).then(ignore => {});
         },
         error: (err: HttpErrorResponse) => {
           this.message.error(err.error);

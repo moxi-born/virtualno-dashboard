@@ -14,6 +14,55 @@ export class AuthService {
    * @param {User} user
    * @returns {Observable<result<string>>}
    */
+  register(user: User): Observable<any> {
+    const options = {
+      responseType: 'text' as 'json'
+    }
+    return new Observable<any>((subscriber : any) => {
+      this.httpClient.post(`${environment.api}/api/v1/register`, user, options).subscribe({
+        next(z: any) {
+          subscriber.next(z);
+          subscriber.complete();
+        },
+        error(k: any) {
+          subscriber.error(k);
+          subscriber.complete();
+        },
+        complete() {
+          subscriber.complete();
+        }
+      });
+    });
+  }
+
+  /**
+   * 获取用户
+   * @param username
+   */
+  fetchUser(username: string): Observable<string> {
+    return new Observable<string>((subscriber : any) => {
+      this.httpClient.get(`${environment.api}/api/v1/user/${username}`).subscribe({
+        next(z: any) {
+          subscriber.next(z.data.username);
+          subscriber.complete();
+        },
+        error(k: any) {
+          subscriber.error(k);
+          subscriber.complete();
+        },
+        complete() {
+          subscriber.complete();
+        }
+      });
+    });
+  }
+
+  /**
+   * 登录
+   *
+   * @param {User} user
+   * @returns {Observable<result<string>>}
+   */
   login(user: User): Observable<any> {
     const options = {
       responseType: 'text' as 'json'
@@ -89,7 +138,13 @@ export class AuthService {
 export class User {
   // 用户名
   username?: string = '';
+  // 昵称
+  nickname?: string = '';
   // 密码
   password?: string = '';
+  // 密码
+  contact?: string = '';
 }
+
+
 

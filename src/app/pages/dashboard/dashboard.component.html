@@ -22,17 +22,36 @@
           </li>
         </ul>
       </li>
+      <li nz-submenu nzTitle="应用管理" nzIcon="appstore-add">
+        <ul>
+          <li nz-menu-item nzMatchRouter>
+            <a routerLink="app/manage">应用管理</a>
+          </li>
+        </ul>
+      </li>
+      <li nz-submenu nzTitle="号码管理" nzIcon="setting">
+        <ul>
+          <li nz-menu-item nzMatchRouter>
+            <a routerLink="pool/manage">号码池管理</a>
+          </li>
+        </ul>
+      </li>
     </ul>
   </nz-sider>
   <nz-layout>
     <nz-header>
-      <div class="app-header">
+      <div nz-row>
+        <div class="app-header" nz-col nzSpan="22">
         <span class="header-trigger" (click)="isCollapsed = !isCollapsed">
             <i class="trigger"
                nz-icon
                [nzType]="isCollapsed ? 'menu-unfold' : 'menu-fold'"
             ></i>
         </span>
+        </div>
+        <div class="app-header" nz-col nzSpan="2">
+          <header-user></header-user>
+        </div>
       </div>
     </nz-header>
     <nz-content>
@@ -40,5 +59,6 @@
         <router-outlet></router-outlet>
       </div>
     </nz-content>
+    <nz-footer>Ant Design ©2020 Implement By Angular</nz-footer>
   </nz-layout>
 </nz-layout>

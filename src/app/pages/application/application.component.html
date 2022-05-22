@@ -1,0 +1,84 @@
+<div>
+  <button nz-button nzType="primary" (click)="showModal()">新增</button>
+  <nz-modal
+    [(nzVisible)]="isVisible"
+    nzMaskClosable="false"
+    nzTitle="添加号码池"
+    nzOkText="确定"
+    nzCancelText="取消"
+    (nzOnOk)="handleOk()"
+    (nzOnCancel)="handleCancel()"
+  >
+    <ng-container *nzModalContent>
+      <form nz-form  [formGroup]="addAppForm" class="add-pool-form" (ngSubmit)="handleOk()">
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="appId">应用ID</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="appId" placeholder="应用ID" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="appName">应用名称</nz-form-label>
+          <nz-form-control>
+            <input nz-input formControlName="appName" placeholder="应用名称" />
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="appKey">app_key</nz-form-label>
+          <nz-form-control>
+            <div nz-row [nzGutter]="24">
+              <div nz-col [nzSpan]="16">
+                <input nz-input formControlName="appKey" id="appKey"/>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <a nz-button (click)="generateKey()">点击生成</a>
+              </div>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+        <nz-form-item>
+          <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="secret">secret</nz-form-label>
+          <nz-form-control>
+            <div nz-row [nzGutter]="24">
+              <div nz-col [nzSpan]="16">
+                <input nz-input formControlName="secret" id="secret"/>
+              </div>
+              <div nz-col [nzSpan]="8">
+                <a nz-button (click)="generateSecret()">点击生成</a>
+              </div>
+            </div>
+          </nz-form-control>
+        </nz-form-item>
+      </form>
+    </ng-container>
+  </nz-modal>
+</div>
+
+<nz-table
+  nzShowSizeChanger
+  [nzData]="listOfApp"
+  [nzFrontPagination]="false"
+  [nzLoading]="loading"
+  [nzTotal]="total"
+  [nzShowPagination]=true
+  [nzPageSize]="pageSize"
+  [nzPageIndex]="pageIndex"
+  (nzQueryParams)="onQueryParamsChange($event)"
+>
+  <thead>
+  <tr>
+    <th nzColumnKey="appId">应用ID</th>
+    <th nzColumnKey="appName">应用名</th>
+    <th nzColumnKey="app_key">app_key</th>
+    <th nzColumnKey="secret">secret</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr *ngFor="let data of listOfApp">
+    <td>{{ data.appId }}</td>
+    <td>{{ data.appName }}</td>
+    <td>{{ data.appKey}}</td>
+    <td>{{ data.secret}}</td>
+  </tr>
+  </tbody>
+</nz-table>
